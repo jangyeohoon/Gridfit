@@ -1,6 +1,6 @@
 //
 //  MenuBarView.swift
-//  Gridly
+//  Gridify
 //
 
 import SwiftUI

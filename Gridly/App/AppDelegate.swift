@@ -1,10 +1,11 @@
 //
 //  AppDelegate.swift
-//  Gridly
+//  Gridify
 //
 
 import AppKit
 import SwiftUI
+import os
 
 public final class AppDelegate: NSObject, NSApplicationDelegate {
     public static private(set) var shared: AppDelegate?
@@ -19,7 +20,7 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Check Accessibility permissions
         if !AccessibilityManager.shared.checkTrust() {
-            print("[Gridify] Accessibility permissions not granted on startup.")
+            AppLogger.accessibility.notice("Accessibility permissions not granted on startup.")
         }
     }
 

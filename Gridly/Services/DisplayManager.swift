@@ -1,6 +1,6 @@
 //
 //  DisplayManager.swift
-//  Gridly
+//  Gridify
 //
 
 import AppKit

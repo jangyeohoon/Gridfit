@@ -1,10 +1,11 @@
 //
 //  SettingsView.swift
-//  Gridly
+//  Gridify
 //
 
 import SwiftUI
 import ServiceManagement
+import os
 
 struct SettingsView: View {
     @ObservedObject var settings = UserSettings.shared
@@ -94,6 +95,29 @@ struct SettingsView: View {
                 .padding(.vertical, 4)
             } header: {
                 Text("Permissions")
+            }
+
+            Section {
+                HStack(spacing: 14) {
+                    Image(nsImage: NSApp.applicationIconImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 44, height: 44)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Gridify")
+                            .font(.headline)
+                        Text("Version 1.0.0")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text("Native macOS Window Auto-Tiler")
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+                .padding(.vertical, 4)
+            } header: {
+                Text("About")
             }
         }
         .formStyle(.grouped)
@@ -320,7 +344,7 @@ struct SettingsView: View {
                     try SMAppService.mainApp.unregister()
                 }
             } catch {
-                print("[Gridify] Failed to update launch at login: \(error)")
+                AppLogger.general.error("Failed to update launch at login: \(error)")
             }
         }
     }

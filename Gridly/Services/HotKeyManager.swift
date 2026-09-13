@@ -1,10 +1,11 @@
 //
 //  HotKeyManager.swift
-//  Gridly
+//  Gridify
 //
 
 import AppKit
 import Carbon
+import os
 
 /// Registers and handles system-wide global hotkeys using Carbon Event API.
 public final class HotKeyManager {
@@ -66,7 +67,7 @@ public final class HotKeyManager {
         )
 
         guard status == noErr else {
-            print("[Gridify] Failed to install Carbon event handler: \(status)")
+            AppLogger.hotKey.error("Failed to install Carbon event handler: \(status)")
             return
         }
 
@@ -82,9 +83,9 @@ public final class HotKeyManager {
 
         let shortcutName = ShortcutFormatter.displayString(keyCode: UInt16(keyCode), modifiers: modifiers)
         if regStatus != noErr {
-            print("[Gridify] Failed to register global hotkey \(shortcutName): \(regStatus)")
+            AppLogger.hotKey.error("Failed to register global hotkey \(shortcutName): \(regStatus)")
         } else {
-            print("[Gridify] Registered global hotkey: \(shortcutName)")
+            AppLogger.hotKey.info("Registered global hotkey: \(shortcutName)")
         }
     }
 

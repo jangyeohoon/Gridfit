@@ -1,6 +1,6 @@
 //
 //  UserSettings.swift
-//  Gridly
+//  Gridify
 //
 
 import SwiftUI

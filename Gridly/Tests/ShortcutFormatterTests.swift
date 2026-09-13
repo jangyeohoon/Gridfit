@@ -1,6 +1,6 @@
 //
 //  ShortcutFormatterTests.swift
-//  Gridly
+//  Gridify
 //
 
 import Carbon

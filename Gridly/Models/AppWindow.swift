@@ -1,6 +1,6 @@
 //
 //  AppWindow.swift
-//  Gridly
+//  Gridify
 //
 
 import Foundation
@@ -25,7 +25,8 @@ public struct AppWindow: Identifiable, Equatable {
         frame: CGRect,
         axElement: AXUIElement? = nil
     ) {
-        self.id = "\(applicationPID)_\(windowID ?? 0)_\(windowTitle)_\(UUID().uuidString)"
+        let elementHash = axElement.map { String(CFHash($0)) } ?? String(abs(windowTitle.hashValue))
+        self.id = "\(applicationPID)_\(windowID ?? 0)_\(elementHash)"
         self.applicationPID = applicationPID
         self.applicationName = applicationName
         self.windowTitle = windowTitle

@@ -1,6 +1,6 @@
 //
 //  WindowFrameSnapshot.swift
-//  Gridly
+//  Gridify
 //
 
 import Foundation

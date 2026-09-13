@@ -1,6 +1,6 @@
 //
-//  GridlyApp.swift
-//  Gridly
+//  GridifyApp.swift
+//  Gridify
 //
 
 import SwiftUI

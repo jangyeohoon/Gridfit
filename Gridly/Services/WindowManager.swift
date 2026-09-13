@@ -1,11 +1,12 @@
 //
 //  WindowManager.swift
-//  Gridly
+//  Gridify
 //
 
 import AppKit
 import ApplicationServices
 import Combine
+import os
 
 /// Discovers, filters, arranges, and restores application windows across displays.
 public final class WindowManager: ObservableObject {
@@ -184,23 +185,28 @@ public final class WindowManager: ObservableObject {
 
     // MARK: - Frame Retrieval and Application
 
-    /// Gets the current frame of an AXUIElement window in AX coordinates.
+    /// Gets the current frame of an AXUIElement window in AX coordinates safely.
     private func getWindowFrame(_ axWindow: AXUIElement) -> CGRect? {
         var posRef: AnyObject?
         var sizeRef: AnyObject?
 
         guard AXUIElementCopyAttributeValue(axWindow, kAXPositionAttribute as CFString, &posRef) == .success,
               AXUIElementCopyAttributeValue(axWindow, kAXSizeAttribute as CFString, &sizeRef) == .success,
-              let posVal = posRef,
-              let sizeVal = sizeRef else {
+              let posVal = posRef, CFGetTypeID(posVal) == AXValueGetTypeID(),
+              let sizeVal = sizeRef, CFGetTypeID(sizeVal) == AXValueGetTypeID() else {
             return nil
         }
+
+        let posAX = posVal as! AXValue
+        let sizeAX = sizeVal as! AXValue
 
         var origin = CGPoint.zero
         var size = CGSize.zero
 
-        AXValueGetValue(posVal as! AXValue, .cgPoint, &origin)
-        AXValueGetValue(sizeVal as! AXValue, .cgSize, &size)
+        guard AXValueGetValue(posAX, .cgPoint, &origin),
+              AXValueGetValue(sizeAX, .cgSize, &size) else {
+            return nil
+        }
 
         return CGRect(origin: origin, size: size)
     }
@@ -434,11 +440,14 @@ public final class WindowManager: ObservableObject {
 
         DispatchQueue.main.async {
             let scope = (targetScreen != nil) ? "active screen: " : ""
+            let summary: String
             if totalFailed == 0 {
-                self.lastResultSummary = "Arranged \(scope)\(totalSuccess) window\(totalSuccess == 1 ? "" : "s")"
+                summary = "Arranged \(scope)\(totalSuccess) window\(totalSuccess == 1 ? "" : "s")"
             } else {
-                self.lastResultSummary = "Arranged \(scope)\(totalSuccess) window\(totalSuccess == 1 ? "" : "s"), \(totalFailed) skipped"
+                summary = "Arranged \(scope)\(totalSuccess) window\(totalSuccess == 1 ? "" : "s"), \(totalFailed) skipped"
             }
+            self.lastResultSummary = summary
+            AppLogger.windowManager.info("\(summary)")
         }
     }
 
@@ -459,7 +468,9 @@ public final class WindowManager: ObservableObject {
 
         DispatchQueue.main.async {
             self.lastArrangementSnapshot = nil
-            self.lastResultSummary = "Restored \(restored) window\(restored == 1 ? "" : "s")"
+            let summary = "Restored \(restored) window\(restored == 1 ? "" : "s")"
+            self.lastResultSummary = summary
+            AppLogger.windowManager.info("\(summary)")
         }
     }
 

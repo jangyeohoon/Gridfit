@@ -1,6 +1,6 @@
 //
 //  GridLayout.swift
-//  Gridly
+//  Gridify
 //
 
 import Foundation
