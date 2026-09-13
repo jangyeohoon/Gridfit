@@ -1,0 +1,21 @@
+# Xcode
+xcuserdata/
+build/
+DerivedData/
+
+# Object files
+*.o
+*.a
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# macOS
+.DS_Store
+*.swp
+*~
+
+# Temporary files
+*.tmp
+*.log
