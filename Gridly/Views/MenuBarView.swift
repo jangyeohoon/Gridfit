@@ -25,10 +25,16 @@ struct MenuBarView: View {
                 windowManager.arrangeAllWindows()
             } label: {
                 HStack {
-                    Text("Arrange Windows")
+                    Text("Arrange All Screens")
                     Spacer()
                     Text(settings.hotkeyDisplayString).foregroundStyle(.secondary)
                 }
+            }
+
+            Button {
+                windowManager.arrangeActiveScreen()
+            } label: {
+                Text("Arrange Current Screen")
             }
 
             Button {

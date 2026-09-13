@@ -44,6 +44,47 @@ public final class UserSettings: ObservableObject {
     @AppStorage("groupByApplication") public var groupByApplication: Bool = true
     @AppStorage("excludeMinimizedWindows") public var excludeMinimizedWindows: Bool = true
     @AppStorage("excludeFullScreenWindows") public var excludeFullScreenWindows: Bool = true
+    @AppStorage("autoArrangeOnDisplayChange") public var autoArrangeOnDisplayChange: Bool = false
+    @AppStorage("excludedBundleIDsRaw") public var excludedBundleIDsRaw: String = ""
+
+    /// Set of bundle identifiers excluded from grid auto-tiling
+    public var excludedBundleIDs: Set<String> {
+        get {
+            let list = excludedBundleIDsRaw.split(separator: ",").map { String($0).trimmingCharacters(in: .whitespaces) }
+            return Set(list.filter { !$0.isEmpty })
+        }
+        set {
+            excludedBundleIDsRaw = newValue.sorted().joined(separator: ",")
+            objectWillChange.send()
+        }
+    }
+
+    public func isExcluded(bundleID: String?) -> Bool {
+        guard let bundleID = bundleID, !bundleID.isEmpty else { return false }
+        return excludedBundleIDs.contains(bundleID)
+    }
+
+    public func toggleExclusion(bundleID: String) {
+        var current = excludedBundleIDs
+        if current.contains(bundleID) {
+            current.remove(bundleID)
+        } else {
+            current.insert(bundleID)
+        }
+        excludedBundleIDs = current
+    }
+
+    public func addExcludedApp(bundleID: String) {
+        var current = excludedBundleIDs
+        current.insert(bundleID)
+        excludedBundleIDs = current
+    }
+
+    public func removeExcludedApp(bundleID: String) {
+        var current = excludedBundleIDs
+        current.remove(bundleID)
+        excludedBundleIDs = current
+    }
 
     // MARK: - General Settings
     @AppStorage("launchAtLogin") public var launchAtLogin: Bool = false

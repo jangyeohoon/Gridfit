@@ -10,6 +10,7 @@ struct SettingsView: View {
     @ObservedObject var settings = UserSettings.shared
     @ObservedObject var accessibility = AccessibilityManager.shared
     @State private var selectedTab: SettingsTab = .general
+    @State private var selectedAppToAdd: String = ""
 
     enum SettingsTab: String, CaseIterable, Identifiable {
         case general = "General"
@@ -56,7 +57,7 @@ struct SettingsView: View {
                 .tag(SettingsTab.shortcuts)
         }
         .padding(20)
-        .frame(width: 480, height: 360)
+        .frame(width: 500, height: 440)
     }
 
     // MARK: - General Tab
@@ -162,10 +163,66 @@ struct SettingsView: View {
                 Toggle("Group windows by application", isOn: $settings.groupByApplication)
                 Toggle("Exclude minimized windows", isOn: $settings.excludeMinimizedWindows)
                 Toggle("Exclude full-screen windows", isOn: $settings.excludeFullScreenWindows)
+                Toggle("Auto-arrange when displays change", isOn: $settings.autoArrangeOnDisplayChange)
             } header: {
                 Text("Arrangement Rules")
             } footer: {
-                Text("When enabled, windows belonging to the same application are kept adjacent to each other in the grid.")
+                Text("When enabled, windows belonging to the same application are kept adjacent, and arrangements automatically adapt when monitors are connected or disconnected.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section {
+                let runningApps = getRunningUserApps()
+                if runningApps.isEmpty {
+                    Text("No running applications detected")
+                        .foregroundStyle(.secondary)
+                } else {
+                    HStack {
+                        Picker("Exclude App", selection: $selectedAppToAdd) {
+                            Text("Select an app to exclude...").tag("")
+                            ForEach(runningApps, id: \.bundleIdentifier) { app in
+                                Text(app.localizedName ?? "App")
+                                    .tag(app.bundleIdentifier ?? "")
+                            }
+                        }
+
+                        Button("Add") {
+                            if !selectedAppToAdd.isEmpty {
+                                settings.addExcludedApp(bundleID: selectedAppToAdd)
+                                selectedAppToAdd = ""
+                            }
+                        }
+                        .disabled(selectedAppToAdd.isEmpty)
+                    }
+                }
+
+                if !settings.excludedBundleIDs.isEmpty {
+                    VStack(alignment: .leading, spacing: 6) {
+                        ForEach(Array(settings.excludedBundleIDs).sorted(), id: \.self) { bundleID in
+                            HStack {
+                                Text(displayName(for: bundleID))
+                                    .font(.subheadline)
+                                Spacer()
+                                Text(bundleID)
+                                    .font(.caption2)
+                                    .foregroundStyle(.tertiary)
+                                Button {
+                                    settings.removeExcludedApp(bundleID: bundleID)
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundColor(.secondary)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                            .padding(.vertical, 2)
+                        }
+                    }
+                }
+            } header: {
+                Text("Excluded Applications")
+            } footer: {
+                Text("Excluded applications will keep their current dimensions and screen position without being arranged into the grid.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -234,6 +291,24 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
+    }
+
+    private func displayName(for bundleID: String) -> String {
+        if let app = NSWorkspace.shared.runningApplications.first(where: { $0.bundleIdentifier == bundleID }),
+           let name = app.localizedName {
+            return name
+        }
+        if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) {
+            return url.deletingPathExtension().lastPathComponent
+        }
+        return bundleID
+    }
+
+    private func getRunningUserApps() -> [NSRunningApplication] {
+        let ownPID = NSRunningApplication.current.processIdentifier
+        return NSWorkspace.shared.runningApplications
+            .filter { $0.activationPolicy == .regular && $0.processIdentifier != ownPID && $0.bundleIdentifier != nil }
+            .sorted { ($0.localizedName ?? "") < ($1.localizedName ?? "") }
     }
 
     private func updateLaunchAtLogin(enabled: Bool) {

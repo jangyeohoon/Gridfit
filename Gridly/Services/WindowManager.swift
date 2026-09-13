@@ -22,20 +22,47 @@ public final class WindowManager: ObservableObject {
     private let settings = UserSettings.shared
     private let displayManager = DisplayManager.shared
     private let layoutCalculator = GridLayoutCalculator.shared
+    private var screenChangeObserver: NSObjectProtocol?
 
-    private init() {}
+    private init() {
+        setupScreenChangeObserver()
+    }
+
+    deinit {
+        if let observer = screenChangeObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+
+    private func setupScreenChangeObserver() {
+        screenChangeObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self = self else { return }
+            if self.settings.autoArrangeOnDisplayChange {
+                // Debounce slightly to allow macOS window server to finish reconfiguration
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    self.arrangeAllWindows()
+                }
+            }
+        }
+    }
 
     // MARK: - Window Discovery
 
     /// Scans for all valid, visible, non-minimized GUI windows currently open on macOS.
-    public func findManageableWindows() -> [AppWindow] {
+    /// If targetScreen is provided, only windows belonging to that screen are returned.
+    public func findManageableWindows(targetScreen: NSScreen? = nil) -> [AppWindow] {
         var result: [AppWindow] = []
         let ownPID = NSRunningApplication.current.processIdentifier
 
         let runningApps = NSWorkspace.shared.runningApplications.filter {
             $0.activationPolicy == .regular &&
             $0.processIdentifier != ownPID &&
-            (!$0.isHidden || !settings.excludeMinimizedWindows)
+            (!$0.isHidden || !settings.excludeMinimizedWindows) &&
+            !settings.isExcluded(bundleID: $0.bundleIdentifier)
         }
 
         for app in runningApps {
@@ -45,6 +72,7 @@ public final class WindowManager: ObservableObject {
 
             var windowsRef: AnyObject?
             let axError = AXUIElementCopyAttributeValue(appElement, kAXWindowsAttribute as CFString, &windowsRef)
+
             guard axError == .success, let axWindows = windowsRef as? [AXUIElement] else {
                 continue
             }
@@ -59,7 +87,7 @@ public final class WindowManager: ObservableObject {
                 _ = AXUIElementCopyAttributeValue(axWindow, kAXTitleAttribute as CFString, &titleRef)
                 let title = (titleRef as? String) ?? ""
 
-                // Window Frame (AX Coordinates)
+                // Get Current Frame in AX Coordinates
                 guard let frame = getWindowFrame(axWindow) else {
                     continue
                 }
@@ -72,6 +100,14 @@ public final class WindowManager: ObservableObject {
                 // Minimum size filter
                 if frame.width < CGFloat(settings.minWindowWidth) || frame.height < CGFloat(settings.minWindowHeight) {
                     continue
+                }
+
+                // Target screen filter (if specified)
+                if let target = targetScreen {
+                    let winScreen = displayManager.screen(forWindowFrameAX: frame)
+                    if winScreen != target {
+                        continue
+                    }
                 }
 
                 let window = AppWindow(
@@ -207,11 +243,22 @@ public final class WindowManager: ObservableObject {
 
     /// Arranges all manageable windows across all connected displays.
     public func arrangeAllWindows() {
+        arrangeWindows(targetScreen: nil)
+    }
+
+    /// Arranges manageable windows strictly on the currently active display (where mouse cursor is located).
+    public func arrangeActiveScreen() {
+        let activeScreen = displayManager.activeScreen()
+        arrangeWindows(targetScreen: activeScreen)
+    }
+
+    /// Internal arrangement pipeline. If targetScreen is non-nil, only windows on that display are arranged.
+    private func arrangeWindows(targetScreen: NSScreen?) {
         guard !isArranging else { return }
         isArranging = true
         defer { isArranging = false }
 
-        let windows = findManageableWindows()
+        let windows = findManageableWindows(targetScreen: targetScreen)
         guard !windows.isEmpty else {
             DispatchQueue.main.async {
                 self.lastResultSummary = "No manageable windows found"
@@ -386,10 +433,11 @@ public final class WindowManager: ObservableObject {
         }
 
         DispatchQueue.main.async {
+            let scope = (targetScreen != nil) ? "active screen: " : ""
             if totalFailed == 0 {
-                self.lastResultSummary = "Arranged \(totalSuccess) window\(totalSuccess == 1 ? "" : "s")"
+                self.lastResultSummary = "Arranged \(scope)\(totalSuccess) window\(totalSuccess == 1 ? "" : "s")"
             } else {
-                self.lastResultSummary = "Arranged \(totalSuccess) window\(totalSuccess == 1 ? "" : "s"), \(totalFailed) skipped"
+                self.lastResultSummary = "Arranged \(scope)\(totalSuccess) window\(totalSuccess == 1 ? "" : "s"), \(totalFailed) skipped"
             }
         }
     }

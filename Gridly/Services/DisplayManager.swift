@@ -75,4 +75,14 @@ public final class DisplayManager {
 
         return bestScreen
     }
+
+    /// Returns the active screen where the user is currently working (based on mouse cursor location).
+    /// Falls back to the main screen or first available screen.
+    public func activeScreen() -> NSScreen {
+        let mouseLocation = NSEvent.mouseLocation
+        if let screenUnderCursor = NSScreen.screens.first(where: { $0.frame.contains(mouseLocation) }) {
+            return screenUnderCursor
+        }
+        return NSScreen.main ?? NSScreen.screens.first ?? NSScreen()
+    }
 }
