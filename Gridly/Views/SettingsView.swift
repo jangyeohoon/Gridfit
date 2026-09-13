@@ -1,6 +1,6 @@
 //
 //  SettingsView.swift
-//  Gridify
+//  Gridfit
 //
 
 import SwiftUI
@@ -66,7 +66,7 @@ struct SettingsView: View {
     private var generalTab: some View {
         Form {
             Section {
-                Toggle("Launch Gridify at login", isOn: $settings.launchAtLogin)
+                Toggle("Launch Gridfit at login", isOn: $settings.launchAtLogin)
                     .onChange(of: settings.launchAtLogin) { _, newValue in
                         updateLaunchAtLogin(enabled: newValue)
                     }
@@ -82,7 +82,7 @@ struct SettingsView: View {
                         Text(accessibility.isTrusted ? "Accessibility Granted" : "Accessibility Required")
                             .font(.headline)
                         Text(accessibility.isTrusted
-                             ? "Gridify can control and tile windows."
+                             ? "Gridfit can control and tile windows."
                              : "Window manipulation requires macOS Accessibility permissions.")
                             .font(.caption)
                             .foregroundColor(.secondary)
@@ -105,7 +105,7 @@ struct SettingsView: View {
                         .frame(width: 44, height: 44)
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Gridify")
+                        Text("Gridfit")
                             .font(.headline)
                         Text("Version 1.0.0")
                             .font(.caption)

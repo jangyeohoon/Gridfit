@@ -1,6 +1,6 @@
 //
 //  HotKeyManager.swift
-//  Gridify
+//  Gridfit
 //
 
 import AppKit

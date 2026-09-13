@@ -1,6 +1,6 @@
 //
 //  AppWindow.swift
-//  Gridify
+//  Gridfit
 //
 
 import Foundation

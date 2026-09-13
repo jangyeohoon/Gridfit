@@ -1,6 +1,6 @@
 //
 //  UserSettings.swift
-//  Gridify
+//  Gridfit
 //
 
 import SwiftUI

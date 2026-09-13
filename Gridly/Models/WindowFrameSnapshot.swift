@@ -1,6 +1,6 @@
 //
 //  WindowFrameSnapshot.swift
-//  Gridify
+//  Gridfit
 //
 
 import Foundation

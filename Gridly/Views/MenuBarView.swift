@@ -1,6 +1,6 @@
 //
 //  MenuBarView.swift
-//  Gridify
+//  Gridfit
 //
 
 import SwiftUI
@@ -83,7 +83,7 @@ struct MenuBarView: View {
             }
             .keyboardShortcut(",", modifiers: [.command])
 
-            Button("Quit Gridify") {
+            Button("Quit Gridfit") {
                 NSApplication.shared.terminate(nil)
             }
             .keyboardShortcut("q", modifiers: [.command])

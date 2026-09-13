@@ -1,6 +1,6 @@
 //
 //  GridLayoutCalculator.swift
-//  Gridify
+//  Gridfit
 //
 
 import Foundation

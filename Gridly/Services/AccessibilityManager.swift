@@ -1,6 +1,6 @@
 //
 //  AccessibilityManager.swift
-//  Gridify
+//  Gridfit
 //
 
 import AppKit

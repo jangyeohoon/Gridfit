@@ -1,6 +1,6 @@
 //
 //  WindowManager.swift
-//  Gridify
+//  Gridfit
 //
 
 import AppKit

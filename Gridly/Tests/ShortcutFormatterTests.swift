@@ -1,6 +1,6 @@
 //
 //  ShortcutFormatterTests.swift
-//  Gridify
+//  Gridfit
 //
 
 import Carbon

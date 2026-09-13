@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		3F2E8D2430567D400066B34C /* Gridly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = Gridly.app; path = Gridify.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3F2E8D2430567D400066B34C /* Gridly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = Gridly.app; path = Gridfit.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -259,7 +259,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = Gridify;
+				INFOPLIST_KEY_CFBundleDisplayName = Gridfit;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Yeohoon Jang. All rights reserved.";
@@ -268,8 +268,8 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "yeohoon-jang.Gridify";
-				PRODUCT_NAME = Gridify;
+				PRODUCT_BUNDLE_IDENTIFIER = "yeohoon-jang.Gridfit";
+				PRODUCT_NAME = Gridfit;
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -294,7 +294,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = Gridify;
+				INFOPLIST_KEY_CFBundleDisplayName = Gridfit;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Yeohoon Jang. All rights reserved.";
@@ -303,8 +303,8 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "yeohoon-jang.Gridify";
-				PRODUCT_NAME = Gridify;
+				PRODUCT_BUNDLE_IDENTIFIER = "yeohoon-jang.Gridfit";
+				PRODUCT_NAME = Gridfit;
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;

@@ -1,17 +1,17 @@
 //
-//  GridifyApp.swift
-//  Gridify
+//  GridfitApp.swift
+//  Gridfit
 //
 
 import SwiftUI
 
 @main
-struct GridifyApp: App {
+struct GridfitApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @ObservedObject var settings = UserSettings.shared
 
     var body: some Scene {
-        MenuBarExtra("Gridify", systemImage: "squareshape.split.2x2") {
+        MenuBarExtra("Gridfit", systemImage: "squareshape.split.2x2") {
             MenuBarView {
                 appDelegate.openSettingsWindow()
             }

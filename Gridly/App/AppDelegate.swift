@@ -1,6 +1,6 @@
 //
 //  AppDelegate.swift
-//  Gridify
+//  Gridfit
 //
 
 import AppKit
@@ -38,7 +38,7 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let hostingController = NSHostingController(rootView: SettingsView())
         let window = NSWindow(contentViewController: hostingController)
-        window.title = "Gridify Settings"
+        window.title = "Gridfit Settings"
         window.styleMask = [.titled, .closable, .miniaturizable]
         window.center()
         window.isReleasedWhenClosed = false
