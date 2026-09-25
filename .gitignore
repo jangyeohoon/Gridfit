@@ -19,3 +19,7 @@ DerivedData/
 # Temporary files
 *.tmp
 *.log
+
+# Packaging & Release
+*.dmg
+build_output/
