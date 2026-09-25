@@ -94,7 +94,7 @@ public final class WindowManager: ObservableObject {
                 }
 
                 // Exclude fullscreen background overlays (e.g. Finder Desktop with empty title)
-                if title.isEmpty && frame.width >= displayManager.primaryScreenHeight {
+                if app.bundleIdentifier == "com.apple.finder" && title.isEmpty {
                     continue
                 }
 
@@ -243,6 +243,207 @@ public final class WindowManager: ObservableObject {
         }
 
         return posSuccess
+    }
+
+    // MARK: - Feedback & Audio
+
+    /// Plays a subtle system feedback sound when enabled in settings.
+    public func triggerFeedbackSound() {
+        guard settings.playFeedbackSound else { return }
+        DispatchQueue.main.async {
+            NSSound(named: "Tink")?.play()
+        }
+    }
+
+    // MARK: - Active Window Snapping
+
+    /// Retrieves the currently focused/active window on macOS.
+    public func getActiveFocusedWindow() -> (AppWindow, AXUIElement)? {
+        let ownPID = NSRunningApplication.current.processIdentifier
+
+        // 1. Identify the active application (excluding Gridfit itself)
+        var targetApp = NSWorkspace.shared.frontmostApplication
+        if targetApp == nil || targetApp?.processIdentifier == ownPID {
+            targetApp = NSWorkspace.shared.runningApplications
+                .filter { $0.activationPolicy == .regular && $0.processIdentifier != ownPID && $0.isActive }
+                .first ?? NSWorkspace.shared.runningApplications.first(where: { $0.activationPolicy == .regular && $0.processIdentifier != ownPID })
+        }
+
+        guard let app = targetApp else { return nil }
+        let pid = app.processIdentifier
+        let appName = app.localizedName ?? "Active App"
+        let appElement = AXUIElementCreateApplication(pid)
+
+        // 2. Try to get the focused window
+        var focusedWindowRef: AnyObject?
+        var status = AXUIElementCopyAttributeValue(appElement, kAXFocusedWindowAttribute as CFString, &focusedWindowRef)
+
+        if status != .success || focusedWindowRef == nil {
+            status = AXUIElementCopyAttributeValue(appElement, kAXMainWindowAttribute as CFString, &focusedWindowRef)
+        }
+
+        if status != .success || focusedWindowRef == nil {
+            var windowsRef: AnyObject?
+            if AXUIElementCopyAttributeValue(appElement, kAXWindowsAttribute as CFString, &windowsRef) == .success,
+               let axWindows = windowsRef as? [AXUIElement] {
+                for axWin in axWindows {
+                    if isValidManageableWindow(axWin), let frame = getWindowFrame(axWin) {
+                        let win = AppWindow(
+                            applicationPID: pid,
+                            applicationName: appName,
+                            windowTitle: getWindowTitle(axWin),
+                            windowID: nil,
+                            frame: frame,
+                            axElement: axWin
+                        )
+                        return (win, axWin)
+                    }
+                }
+            }
+            return nil
+        }
+
+        guard let focusedRef = focusedWindowRef,
+              CFGetTypeID(focusedRef) == AXUIElementGetTypeID() else {
+            return nil
+        }
+        let axWindow = focusedRef as! AXUIElement
+        guard isValidManageableWindow(axWindow),
+              let frame = getWindowFrame(axWindow) else {
+            return nil
+        }
+
+        let win = AppWindow(
+            applicationPID: pid,
+            applicationName: appName,
+            windowTitle: getWindowTitle(axWindow),
+            windowID: nil,
+            frame: frame,
+            axElement: axWindow
+        )
+        return (win, axWindow)
+    }
+
+    private func getWindowTitle(_ axWindow: AXUIElement) -> String {
+        var titleRef: AnyObject?
+        _ = AXUIElementCopyAttributeValue(axWindow, kAXTitleAttribute as CFString, &titleRef)
+        return (titleRef as? String) ?? ""
+    }
+
+    /// Snaps the currently active window according to the specified snap action.
+    public func snapActiveWindow(to action: WindowSnapAction) {
+        if action == .nextDisplay {
+            moveActiveWindowToNextDisplay()
+            return
+        }
+
+        guard let (appWindow, axElement) = getActiveFocusedWindow() else {
+            DispatchQueue.main.async {
+                self.lastResultSummary = "No active window found to snap"
+            }
+            return
+        }
+
+        // Save pre-snap snapshot for Undo
+        let snapshot = WindowFrameSnapshot(window: appWindow, frame: appWindow.frame)
+        DispatchQueue.main.async {
+            self.lastArrangementSnapshot = ArrangementSnapshot(snapshots: [snapshot])
+        }
+
+        let screen = displayManager.screen(forWindowFrameAX: appWindow.frame)
+        let usableBounds = displayManager.usableBoundsAX(for: screen)
+
+        let targetRect = action.calculateFrame(
+            in: usableBounds,
+            currentFrame: appWindow.frame,
+            screenPadding: CGFloat(settings.screenPadding),
+            horizontalSpacing: CGFloat(settings.horizontalSpacing),
+            verticalSpacing: CGFloat(settings.verticalSpacing)
+        )
+
+        let success = setWindowFrame(axElement, to: targetRect)
+        raiseWindow(axElement)
+
+        if success {
+            triggerFeedbackSound()
+            DispatchQueue.main.async {
+                let summary = "Snapped \(appWindow.applicationName) to \(action.rawValue)"
+                self.lastResultSummary = summary
+                AppLogger.windowManager.info("\(summary)")
+            }
+        }
+    }
+
+    /// Moves the active window to the next connected display while maintaining relative proportions.
+    public func moveActiveWindowToNextDisplay() {
+        guard let (appWindow, axElement) = getActiveFocusedWindow() else {
+            DispatchQueue.main.async {
+                self.lastResultSummary = "No active window found to move"
+            }
+            return
+        }
+
+        let screens = NSScreen.screens
+        guard screens.count > 1 else {
+            DispatchQueue.main.async {
+                self.lastResultSummary = "Only 1 display connected"
+            }
+            return
+        }
+
+        let currentScreen = displayManager.screen(forWindowFrameAX: appWindow.frame)
+        guard let currentIndex = screens.firstIndex(of: currentScreen) else { return }
+
+        let nextIndex = (currentIndex + 1) % screens.count
+        let targetScreen = screens[nextIndex]
+
+        // Save snapshot for Undo
+        let snapshot = WindowFrameSnapshot(window: appWindow, frame: appWindow.frame)
+        DispatchQueue.main.async {
+            self.lastArrangementSnapshot = ArrangementSnapshot(snapshots: [snapshot])
+        }
+
+        let currentUsable = displayManager.usableBoundsAX(for: currentScreen)
+        let targetUsable = displayManager.usableBoundsAX(for: targetScreen)
+
+        let relX = (appWindow.frame.origin.x - currentUsable.origin.x) / max(1.0, currentUsable.width)
+        let relY = (appWindow.frame.origin.y - currentUsable.origin.y) / max(1.0, currentUsable.height)
+        let relW = appWindow.frame.width / max(1.0, currentUsable.width)
+        let relH = appWindow.frame.height / max(1.0, currentUsable.height)
+
+        let screenPad = CGFloat(settings.screenPadding)
+        let targetW = max(100.0, min(targetUsable.width - (screenPad * 2), targetUsable.width * relW))
+        let targetH = max(100.0, min(targetUsable.height - (screenPad * 2), targetUsable.height * relH))
+
+        var targetX = targetUsable.origin.x + (targetUsable.width * relX)
+        var targetY = targetUsable.origin.y + (targetUsable.height * relY)
+
+        // Clamp inside target usable bounds
+        if targetX + targetW > targetUsable.maxX - screenPad {
+            targetX = max(targetUsable.minX + screenPad, targetUsable.maxX - screenPad - targetW)
+        }
+        if targetX < targetUsable.minX + screenPad {
+            targetX = targetUsable.minX + screenPad
+        }
+        if targetY + targetH > targetUsable.maxY - screenPad {
+            targetY = max(targetUsable.minY + screenPad, targetUsable.maxY - screenPad - targetH)
+        }
+        if targetY < targetUsable.minY + screenPad {
+            targetY = targetUsable.minY + screenPad
+        }
+
+        let targetRect = CGRect(x: targetX, y: targetY, width: targetW, height: targetH)
+        let success = setWindowFrame(axElement, to: targetRect)
+        raiseWindow(axElement)
+
+        if success {
+            triggerFeedbackSound()
+            DispatchQueue.main.async {
+                let summary = "Moved \(appWindow.applicationName) to next display"
+                self.lastResultSummary = summary
+                AppLogger.windowManager.info("\(summary)")
+            }
+        }
     }
 
     // MARK: - Arrangement & Tiling
@@ -438,6 +639,10 @@ public final class WindowManager: ObservableObject {
             clampAllWindowsToScreen(windows: orderedWindows, in: usableAXBounds)
         }
 
+        if totalSuccess > 0 {
+            triggerFeedbackSound()
+        }
+
         DispatchQueue.main.async {
             let scope = (targetScreen != nil) ? "active screen: " : ""
             let summary: String
@@ -464,6 +669,10 @@ public final class WindowManager: ObservableObject {
                 restored += 1
             }
             raiseWindow(axElement)
+        }
+
+        if restored > 0 {
+            triggerFeedbackSound()
         }
 
         DispatchQueue.main.async {

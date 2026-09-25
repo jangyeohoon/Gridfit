@@ -47,6 +47,55 @@ struct MenuBarView: View {
 
             Divider()
 
+            // Quick Snap Active Window Actions
+            Menu("Snap Active Window") {
+                Button {
+                    windowManager.snapActiveWindow(to: .leftHalf)
+                } label: {
+                    Label("Left Half", systemImage: "rectangle.lefthalf.filled")
+                }
+
+                Button {
+                    windowManager.snapActiveWindow(to: .rightHalf)
+                } label: {
+                    Label("Right Half", systemImage: "rectangle.righthalf.filled")
+                }
+
+                Button {
+                    windowManager.snapActiveWindow(to: .topHalf)
+                } label: {
+                    Label("Top Half", systemImage: "rectangle.tophalf.filled")
+                }
+
+                Button {
+                    windowManager.snapActiveWindow(to: .bottomHalf)
+                } label: {
+                    Label("Bottom Half", systemImage: "rectangle.bottomhalf.filled")
+                }
+
+                Divider()
+
+                Button {
+                    windowManager.snapActiveWindow(to: .maximize)
+                } label: {
+                    Label("Maximize", systemImage: "arrow.up.left.and.arrow.down.right")
+                }
+
+                Button {
+                    windowManager.snapActiveWindow(to: .center)
+                } label: {
+                    Label("Center", systemImage: "plus.viewfinder")
+                }
+
+                Divider()
+
+                Button {
+                    windowManager.moveActiveWindowToNextDisplay()
+                } label: {
+                    Label("Move to Next Display", systemImage: "display.2")
+                }
+            }
+
             // Layout Picker
             Menu("Layout") {
                 ForEach(LayoutPreset.allCases) { preset in

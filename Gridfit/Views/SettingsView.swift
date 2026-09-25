@@ -70,8 +70,10 @@ struct SettingsView: View {
                     .onChange(of: settings.launchAtLogin) { _, newValue in
                         updateLaunchAtLogin(enabled: newValue)
                     }
+
+                Toggle("Play sound feedback on arrangement", isOn: $settings.playFeedbackSound)
             } header: {
-                Text("Startup")
+                Text("Preferences")
             }
 
             Section {

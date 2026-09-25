@@ -36,8 +36,6 @@ public struct AppWindow: Identifiable, Equatable {
     }
 
     public static func == (lhs: AppWindow, rhs: AppWindow) -> Bool {
-        return lhs.applicationPID == rhs.applicationPID &&
-               lhs.windowID == rhs.windowID &&
-               lhs.windowTitle == rhs.windowTitle
+        return lhs.id == rhs.id
     }
 }

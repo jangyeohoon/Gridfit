@@ -88,6 +88,7 @@ public final class UserSettings: ObservableObject {
 
     // MARK: - General Settings
     @AppStorage("launchAtLogin") public var launchAtLogin: Bool = false
+    @AppStorage("playFeedbackSound") public var playFeedbackSound: Bool = true
 
     // MARK: - Shortcut Settings
     @AppStorage("hotkeyKeyCode") public var hotkeyKeyCode: Int = 5 // 'G' key in Carbon (kVK_ANSI_G)
