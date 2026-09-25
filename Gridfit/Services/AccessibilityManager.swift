@@ -36,8 +36,9 @@ public final class AccessibilityManager: ObservableObject {
     @discardableResult
     public func checkTrust() -> Bool {
         let trusted = AXIsProcessTrusted()
-        if self.isTrusted != trusted {
-            DispatchQueue.main.async {
+        let updateBlock = { [weak self] in
+            guard let self = self else { return }
+            if self.isTrusted != trusted {
                 self.isTrusted = trusted
                 if trusted {
                     AppLogger.accessibility.info("Accessibility trust granted.")
@@ -47,6 +48,11 @@ public final class AccessibilityManager: ObservableObject {
                 }
             }
         }
+        if Thread.isMainThread {
+            updateBlock()
+        } else {
+            DispatchQueue.main.async(execute: updateBlock)
+        }
         return trusted
     }
 
@@ -54,11 +60,17 @@ public final class AccessibilityManager: ObservableObject {
     public func promptForPermission() {
         let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
         let trusted = AXIsProcessTrustedWithOptions(options)
-        DispatchQueue.main.async {
+        let updateBlock = { [weak self] in
+            guard let self = self else { return }
             self.isTrusted = trusted
             if !trusted {
                 self.startPolling()
             }
+        }
+        if Thread.isMainThread {
+            updateBlock()
+        } else {
+            DispatchQueue.main.async(execute: updateBlock)
         }
     }
 

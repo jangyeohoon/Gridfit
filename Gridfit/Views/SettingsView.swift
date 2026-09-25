@@ -58,7 +58,7 @@ struct SettingsView: View {
                 .tag(SettingsTab.shortcuts)
         }
         .padding(20)
-        .frame(width: 500, height: 440)
+        .frame(width: 520, height: 480)
     }
 
     // MARK: - General Tab
@@ -95,8 +95,12 @@ struct SettingsView: View {
                     }
                 }
                 .padding(.vertical, 4)
+
+                Button("Show Welcome Guide...") {
+                    AppDelegate.shared?.openOnboardingWindow()
+                }
             } header: {
-                Text("Permissions")
+                Text("Permissions & Guide")
             }
 
             Section {
@@ -109,20 +113,44 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Gridfit")
                             .font(.headline)
-                        Text("Version 1.0.0")
+                        Text("Version 1.0.0 (Build 1)")
                             .font(.caption)
                             .foregroundStyle(.secondary)
-                        Text("Native macOS Window Auto-Tiler")
+                        Text("Native macOS Window Auto-Tiler & Manager")
                             .font(.caption2)
                             .foregroundStyle(.tertiary)
                     }
                 }
                 .padding(.vertical, 4)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Privacy & Security")
+                        .font(.caption.bold())
+                    Text("Gridfit runs 100% locally on your Mac. No network telemetry, keystrokes, personal data, or window contents are ever tracked or transmitted.")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.vertical, 2)
+
+                HStack(spacing: 16) {
+                    Link("Support & Feedback", destination: URL(string: "https://github.com/yeohoon-jang/Gridfit/issues")!)
+                        .font(.caption)
+
+                    Link("Privacy Policy", destination: URL(string: "https://github.com/yeohoon-jang/Gridfit#privacy-policy")!)
+                        .font(.caption)
+
+                    Link("Rate on App Store", destination: URL(string: "macappstore://apps.apple.com/app/id6470000000?action=write-review")!)
+                        .font(.caption)
+                }
+                .padding(.vertical, 2)
             } header: {
                 Text("About")
             }
         }
         .formStyle(.grouped)
+        .onAppear {
+            syncLaunchAtLoginState()
+        }
     }
 
     // MARK: - Layout Tab
@@ -347,6 +375,15 @@ struct SettingsView: View {
                 }
             } catch {
                 AppLogger.general.error("Failed to update launch at login: \(error)")
+            }
+        }
+    }
+
+    private func syncLaunchAtLoginState() {
+        if #available(macOS 13.0, *) {
+            let isEnabled = SMAppService.mainApp.status == .enabled
+            if settings.launchAtLogin != isEnabled {
+                settings.launchAtLogin = isEnabled
             }
         }
     }

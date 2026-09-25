@@ -117,8 +117,7 @@ struct MenuBarView: View {
             // Accessibility Warning if not granted
             if !accessibility.isTrusted {
                 Button {
-                    accessibility.promptForPermission()
-                    accessibility.openSystemSettings()
+                    AppDelegate.shared?.openOnboardingWindow()
                 } label: {
                     Label("Grant Accessibility Access...", systemImage: "exclamationmark.triangle.fill")
                 }
@@ -126,7 +125,11 @@ struct MenuBarView: View {
                 Divider()
             }
 
-            // App Settings & Termination
+            // App Settings, Welcome Guide & Termination
+            Button("Welcome Guide...") {
+                AppDelegate.shared?.openOnboardingWindow()
+            }
+
             Button("Settings...") {
                 openSettingsAction()
             }

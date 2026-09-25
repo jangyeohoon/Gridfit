@@ -88,6 +88,7 @@ public final class UserSettings: ObservableObject {
 
     // MARK: - General Settings
     @AppStorage("launchAtLogin") public var launchAtLogin: Bool = false
+    @AppStorage("hasCompletedOnboarding") public var hasCompletedOnboarding: Bool = false
     @AppStorage("playFeedbackSound") public var playFeedbackSound: Bool = true
 
     // MARK: - Shortcut Settings
