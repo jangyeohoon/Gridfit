@@ -1,95 +1,79 @@
 # Gridfit
 
-<p align="center">
-  <strong>Intelligent, Native Window Auto-Tiler & Manager for macOS</strong>
-</p>
+A lightweight macOS menu bar app for tiling and snapping windows with keyboard shortcuts.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/platform-macOS%2013.0%2B-blue?logo=apple" alt="Platform" />
-  <img src="https://img.shields.io/badge/Swift-5.9-orange?logo=swift" alt="Swift" />
-  <img src="https://img.shields.io/badge/license-MIT-green" alt="License" />
-  <img src="https://img.shields.io/badge/release-v1.0.0-purple" alt="Release" />
-</p>
+![macOS 13+](https://img.shields.io/badge/macOS-13.0%2B-black?logo=apple)
+![License: MIT](https://img.shields.io/badge/license-MIT-blue)
+
+Gridfit arranges open windows into a clean, non-overlapping grid with a single shortcut, similar to tiling window managers, but without replacing the default macOS window manager.
 
 ---
 
-**Gridfit** is a lightweight, high-performance macOS menu bar utility designed to bring instant order to your messy workspace. With a single customizable keystroke or a click, Gridfit tiles all visible application windows into an aesthetically balanced grid layout without overlaps.
+## Features
+
+- **Auto-Tiling (`⌥G`)**: Tiles visible windows into a balanced grid based on your screen aspect ratio.
+- **Quick Snap**: Snap the focused window to left/right/top/bottom halves, maximize, or center from the menu bar.
+- **Multi-Monitor**: Move windows between displays while preserving relative proportions.
+- **App Exclusions**: Exclude background apps (Slack, Spotify, etc.) from being tiled.
+- **Undo (`⌘Z`)**: Revert the last arrangement back to original window positions.
+- **Sound Feedback**: Optional system click sound when windows are moved or tiled.
 
 ---
 
-## ✨ Key Features
-
-- **⚡️ One-Key Auto-Tiling**: Instantly calculates the optimal grid layout based on screen aspect ratio and window count, clamping perfectly inside your usable display bounds.
-- **🪟 Quick Snap Active Window**: Snap the focused window to Left Half, Right Half, Top Half, Bottom Half, Maximize, or Center directly from the menu bar.
-- **🖥️ Multi-Display Support**: Automatically detects monitor configurations and supports moving active windows across displays while preserving relative proportions.
-- **🎯 App Exclusion**: Exclude persistent windows or background apps (e.g., Slack, Spotify) from auto-arrangement with one click.
-- **↩️ Instant Undo (`⌘Z`)**: Made a mistake? Seamlessly restore windows back to their previous coordinates and sizes.
-- **🔔 Tactile Audio Feedback**: Subtle system sound feedback confirms window movement and tiling actions.
-- **🔒 100% Privacy & Security**: Operates completely offline. Never captures keystrokes, personal information, window contents, or telemetry.
-
----
-
-## 🚀 Installation
+## Installation
 
 ### Download DMG
-1. Download the latest `Gridfit.dmg` from [GitHub Releases](https://github.com/jangyeohoon/Gridfit/releases/latest).
-2. Open the DMG and drag **Gridfit** into your `Applications` folder.
-3. Launch Gridfit from Spotlight or Applications.
 
-### Accessibility Permission Setup
-Gridfit uses the native macOS Accessibility API (`AXUIElement`) to reposition and resize windows.
-1. On first launch, the **Welcome Guide** will appear automatically.
-2. Click **Open System Settings** to navigate to `Privacy & Security > Accessibility`.
-3. Toggle the switch next to **Gridfit** to `ON`.
+1. Download the latest `Gridfit.dmg` from [Releases](https://github.com/jangyeohoon/Gridfit/releases/latest).
+2. Drag **Gridfit** into `/Applications`.
+3. Launch the app from Applications or Spotlight.
 
----
+### Permissions
 
-## ⌨️ Shortcuts & Usage
+Gridfit requires macOS Accessibility permissions to read window sizes and reposition them via `AXUIElement` APIs.
 
-| Action | Shortcut | Description |
-| :--- | :--- | :--- |
-| **Auto-Tile All Screens** | `⌥ G` (Option + G) | Instantly tiles all manageable windows on all displays |
-| **Auto-Tile Current Screen** | Menu Bar | Tiles only windows located on the display under cursor |
-| **Undo Last Arrangement** | Menu Bar (`⌘Z`) | Restores windows to pre-tiling positions |
-| **Quick Snap** | Menu Bar | Snap focused window to halves, center, or maximize |
-| **Move to Next Display** | Menu Bar | Moves focused window to the next connected monitor |
-
-> *Note: The global auto-tile shortcut can be customized to any key combination in **Gridfit Settings > Shortcuts**.*
+On first launch, follow the onboarding prompt or go to:
+> **System Settings** > **Privacy & Security** > **Accessibility** > enable **Gridfit**.
 
 ---
 
-## 🛠️ Build from Source
+## Default Shortcuts
 
-### Prerequisites
-- macOS 13.0 (Ventura) or later
-- Xcode 15.0+ or Command Line Tools
+| Action | Shortcut |
+| :--- | :--- |
+| Tile windows (all screens) | `⌥G` |
+| Tile windows (active screen only) | Menu Bar > Arrange Active Screen |
+| Undo last arrangement | Menu Bar > Undo (`⌘Z`) |
+| Snap focused window | Menu Bar > Snap Active Window |
+| Move to next display | Menu Bar > Move to Next Display |
+
+*The global shortcut can be customized in **Settings > Shortcuts**.*
+
+---
+
+## Building from Source
+
+Requirements: macOS 13.0+, Xcode 15.0+
 
 ```bash
-# Clone the repository
 git clone https://github.com/jangyeohoon/Gridfit.git
 cd Gridfit
-
-# Build Release application & package DMG
-chmod +x build_dmg.sh
 ./build_dmg.sh
 ```
 
-The resulting `Gridfit.dmg` will be saved directly in the project root directory.
+The output will be placed at `./Gridfit.dmg`.
 
 ---
 
 <a name="privacy-policy"></a>
-## 🔒 Privacy Policy
+## Privacy Policy
 
-Gridfit was built with strict privacy and security standards:
-- **No Data Collection**: Gridfit does not track, collect, store, or transmit any user data, telemetry, analytics, or identifier tokens.
-- **Local Execution**: All window calculations and Accessibility API calls run 100% locally on your Mac without any network connections.
-- **Accessibility Scope**: Accessibility privileges are used solely to query window bounding boxes (`kAXPositionAttribute`, `kAXSizeAttribute`) and move/resize windows. Keystrokes, screen recordings, and application contents are never read.
-
-For inquiries or feedback, please visit [GitHub Issues](https://github.com/jangyeohoon/Gridfit/issues).
+Gridfit runs entirely locally on your Mac:
+- **No Network Activity**: The app does not make network requests, track analytics, or send telemetry.
+- **No Keystroke / Screen Logging**: Accessibility permissions are used strictly to query and update window bounding boxes (`kAXPositionAttribute`, `kAXSizeAttribute`). Window contents, keystrokes, and screen buffers are never accessed.
 
 ---
 
-## 📄 License
+## License
 
-This project is licensed under the [MIT License](LICENSE) - see the [LICENSE](LICENSE) file for details.
+[MIT](LICENSE) © 2026 Yeohoon Jang
